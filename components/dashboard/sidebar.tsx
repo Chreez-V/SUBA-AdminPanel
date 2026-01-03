@@ -22,20 +22,20 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
+    <div className="flex h-screen w-64 flex-col bg-gradient-to-b from-[#00457C] to-[#003459] text-white shadow-2xl">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-gray-800 px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-          <Bus className="h-6 w-6" />
+      <div className="flex h-20 items-center gap-3 border-b border-[#0066B3]/30 px-6 bg-[#003459]/50">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FDB714] shadow-lg">
+          <Bus className="h-7 w-7 text-[#00457C]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">SUBA</h1>
-          <p className="text-xs text-gray-400">Admin Panel</p>
+          <h1 className="text-2xl font-bold text-white">SUBA</h1>
+          <p className="text-xs text-blue-200 font-medium">Admin Panel</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-2 px-4 py-6">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -43,27 +43,27 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200",
                 isActive
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  ? "bg-[#FDB714] text-[#00457C] shadow-md"
+                  : "text-blue-100 hover:bg-[#0066B3]/50 hover:text-white"
               )}
             >
               <item.icon className="h-5 w-5" />
-              {item.name}
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* User & Logout */}
-      <div className="border-t border-gray-800 p-4">
+      <div className="border-t border-[#0066B3]/30 p-4 bg-[#003459]/50">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-blue-100 transition-all duration-200 hover:bg-[#E31E24] hover:text-white"
         >
           <LogOut className="h-5 w-5" />
-          Cerrar Sesión
+          <span>Cerrar Sesión</span>
         </button>
       </div>
     </div>
