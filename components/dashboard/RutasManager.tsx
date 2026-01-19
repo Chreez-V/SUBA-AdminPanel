@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Save, Trash2, Loader2, Navigation } from "lucide-react";
-import { calculateRoute, createRoute, getRoutes } from "@/lib/api";
+import { MapPin, Save, Trash2, Loader2, Navigation, X, Power } from "lucide-react";
+import { createRoute, getRoutes, deleteRoute, updateRoute } from "@/lib/api";
 
 interface RoutePoint {
   lat: number;
@@ -22,14 +22,28 @@ interface RouteData {
   duration: number;
 }
 
+interface SavedRoute {
+  _id: string;
+  name: string;
+  distance: number;
+  duration: number;
+  fare: number;
+  isActive: boolean;
+  startPoint: RoutePoint;
+  endPoint: RoutePoint;
+  geometry: any;
+  schedules?: string[];
+}
+
 // Importar el mapa dinámicamente para evitar problemas de SSR
 const MapComponent = dynamic<{
   onMapClick: (point: RoutePoint) => void;
   routeData: RouteData;
+  selectedRoute?: SavedRoute | null;
 }>(() => import("@/components/dashboard/route-map"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[600px] items-center justify-center bg-gray-100 rounded-lg">
+    <div className="flex h-[400px] md:h-[600px] items-center justify-center bg-gray-100 rounded-lg">
       <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
     </div>
   ),
@@ -44,9 +58,12 @@ export default function RutasManager() {
     duration: 0,
   });
   const [routeName, setRouteName] = useState("");
+  const [fare, setFare] = useState<string>("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [savedRoutes, setSavedRoutes] = useState<any[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [selectedRoute, setSelectedRoute] = useState<SavedRoute | null>(null);
+  const [editingRoute, setEditingRoute] = useState<SavedRoute | null>(null);
 
   useEffect(() => {
     loadRoutes();
@@ -58,6 +75,7 @@ export default function RutasManager() {
       setSavedRoutes(routes);
     } catch (error) {
       console.error("Error loading routes:", error);
+      alert("Error al cargar las rutas");
     }
   };
 
@@ -72,28 +90,11 @@ export default function RutasManager() {
       });
     } else if (!routeData.end) {
       setIsCalculating(true);
-      try {
-        const result = await calculateRoute(
-          [routeData.start.lat, routeData.start.lng],
-          [point.lat, point.lng]
-        );
-
-        if (result.routes && result.routes.length > 0) {
-          const route = result.routes[0];
-          setRouteData({
-            start: routeData.start,
-            end: point,
-            geometry: route.geometry,
-            distance: route.distance / 1000,
-            duration: route.duration / 60,
-          });
-        }
-      } catch (error) {
-        console.error("Error calculating route:", error);
-        alert("Error al calcular la ruta. Intente nuevamente.");
-      } finally {
-        setIsCalculating(false);
-      }
+      setRouteData(prev => ({ ...prev, end: point }));
+      
+      // El cálculo ahora se hace en el backend al crear la ruta
+      // Solo guardamos los puntos
+      setIsCalculating(false);
     }
   };
 
@@ -106,63 +107,100 @@ export default function RutasManager() {
       duration: 0,
     });
     setRouteName("");
+    setFare("");
+    setSelectedRoute(null);
+    setEditingRoute(null);
   };
 
   const handleSaveRoute = async () => {
     if (!routeData.start || !routeData.end || !routeName.trim()) {
-      alert("Complete el nombre de la ruta y los puntos");
+      alert("Complete el nombre de la ruta y los puntos de inicio y final");
       return;
     }
 
     setIsSaving(true);
     try {
-      await createRoute({
-        nombre: routeName,
-        puntoInicio: routeData.start,
-        puntoFinal: routeData.end,
-        geometry: routeData.geometry,
-        distancia: `${routeData.distance.toFixed(2)} km`,
-        tiempoEstimado: `${Math.round(routeData.duration)} min`,
-        estado: "Activa",
+      const newRoute = await createRoute({
+        name: routeName,
+        startPoint: { lat: routeData.start.lat, lng: routeData.start.lng },
+        endPoint: { lat: routeData.end.lat, lng: routeData.end.lng },
+        fare: fare ? parseFloat(fare) : 0,
       });
 
-      alert("Ruta guardada exitosamente");
+      alert("✅ Ruta guardada exitosamente");
       handleResetRoute();
       await loadRoutes();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving route:", error);
-      alert("Error al guardar la ruta");
+      alert(error.message || "Error al guardar la ruta");
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleDeleteRoute = async (id: string) => {
+    if (!confirm("¿Está seguro de desactivar esta ruta?")) return;
+
+    try {
+      await deleteRoute(id);
+      alert("Ruta desactivada exitosamente");
+      await loadRoutes();
+      if (selectedRoute?._id === id) {
+        setSelectedRoute(null);
+      }
+    } catch (error) {
+      console.error("Error deleting route:", error);
+      alert("Error al desactivar la ruta");
+    }
+  };
+
+  const handleToggleActive = async (route: SavedRoute) => {
+    try {
+      await updateRoute(route._id, { isActive: !route.isActive });
+      alert(`Ruta ${route.isActive ? 'desactivada' : 'activada'} exitosamente`);
+      await loadRoutes();
+    } catch (error) {
+      console.error("Error toggling route:", error);
+      alert("Error al cambiar el estado de la ruta");
+    }
+  };
+
+  const handleViewRoute = (route: SavedRoute) => {
+    setSelectedRoute(route);
+    setRouteData({
+      start: route.startPoint,
+      end: route.endPoint,
+      geometry: route.geometry,
+      distance: route.distance,
+      duration: route.duration,
+    });
+  };
+
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Rutas</h1>
-        <p className="text-gray-600">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Gestión de Rutas</h1>
+        <p className="text-sm md:text-base text-gray-600 mt-1">
           Crear y gestionar rutas en Ciudad Guayana usando OSRM
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
         {/* Panel de Control */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6 lg:col-span-1 order-2 lg:order-1">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                 <Navigation className="h-5 w-5" />
                 Nueva Ruta
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+              <div className="rounded-lg bg-blue-50 p-3 md:p-4 text-xs md:text-sm text-blue-800">
                 <p className="font-medium mb-2">Instrucciones:</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Haga clic en el mapa para marcar el punto de inicio</li>
-                  <li>Haga clic nuevamente para marcar el punto final</li>
-                  <li>La ruta se calculará automáticamente</li>
+                  <li>Haga clic en el mapa para el punto de inicio</li>
+                  <li>Haga clic para el punto final</li>
                   <li>Asigne un nombre y guarde la ruta</li>
                 </ol>
               </div>
@@ -171,11 +209,10 @@ export default function RutasManager() {
                 <div className="rounded-lg border border-gray-200 p-3">
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-green-600" />
-                    <span className="font-medium">Punto de Inicio:</span>
+                    <span className="font-medium">Inicio:</span>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    Lat: {routeData.start.lat.toFixed(5)}, Lng:{" "}
-                    {routeData.start.lng.toFixed(5)}
+                    {routeData.start.lat.toFixed(5)}, {routeData.start.lng.toFixed(5)}
                   </p>
                 </div>
               )}
@@ -184,50 +221,43 @@ export default function RutasManager() {
                 <div className="rounded-lg border border-gray-200 p-3">
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-red-600" />
-                    <span className="font-medium">Punto Final:</span>
+                    <span className="font-medium">Final:</span>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    Lat: {routeData.end.lat.toFixed(5)}, Lng:{" "}
-                    {routeData.end.lng.toFixed(5)}
+                    {routeData.end.lat.toFixed(5)}, {routeData.end.lng.toFixed(5)}
                   </p>
                 </div>
               )}
 
-              {routeData.geometry && (
-                <div className="space-y-3 rounded-lg bg-green-50 p-4">
+              {routeData.start && routeData.end && (
+                <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-green-800">
-                      Distancia Total
-                    </p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {routeData.distance.toFixed(2)} km
-                    </p>
+                    <Label htmlFor="routeName" className="text-sm">Nombre de la Ruta</Label>
+                    <Input
+                      id="routeName"
+                      placeholder="Ej: Centro - Unare"
+                      value={routeName}
+                      onChange={(e) => setRouteName(e.target.value)}
+                      className="mt-1"
+                    />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-green-800">
-                      Tiempo Estimado
-                    </p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {Math.round(routeData.duration)} min
-                    </p>
+                    <Label htmlFor="fare" className="text-sm">Tarifa (Bs.) - Opcional</Label>
+                    <Input
+                      id="fare"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={fare}
+                      onChange={(e) => setFare(e.target.value)}
+                      className="mt-1"
+                    />
                   </div>
-                </div>
-              )}
-
-              {routeData.geometry && (
-                <div className="space-y-2">
-                  <Label htmlFor="routeName">Nombre de la Ruta</Label>
-                  <Input
-                    id="routeName"
-                    placeholder="Ej: Centro - Unare"
-                    value={routeName}
-                    onChange={(e) => setRouteName(e.target.value)}
-                  />
                 </div>
               )}
 
               <div className="flex gap-2">
-                {routeData.geometry && (
+                {routeData.start && routeData.end && (
                   <Button
                     onClick={handleSaveRoute}
                     disabled={isSaving || !routeName.trim()}
@@ -241,18 +271,18 @@ export default function RutasManager() {
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Guardar Ruta
+                        Guardar
                       </>
                     )}
                   </Button>
                 )}
-                {(routeData.start || routeData.end) && (
+                {(routeData.start || routeData.end || selectedRoute) && (
                   <Button
                     variant="outline"
                     onClick={handleResetRoute}
                     disabled={isCalculating || isSaving}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -261,7 +291,7 @@ export default function RutasManager() {
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                   <span className="ml-2 text-sm text-gray-600">
-                    Calculando ruta óptima...
+                    Preparando ruta...
                   </span>
                 </div>
               )}
@@ -269,25 +299,83 @@ export default function RutasManager() {
           </Card>
 
           {/* Rutas Guardadas */}
-          <Card>
+          <Card className="max-h-[400px] overflow-hidden">
             <CardHeader>
-              <CardTitle>Rutas Guardadas</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Rutas Guardadas</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-y-auto max-h-[300px]">
               {savedRoutes.length === 0 ? (
                 <p className="text-sm text-gray-500">No hay rutas guardadas</p>
               ) : (
                 <div className="space-y-2">
                   {savedRoutes.map((route) => (
                     <div
-                      key={route.id}
-                      className="rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition-colors"
+                      key={route._id}
+                      className={`rounded-lg border p-3 transition-all ${
+                        selectedRoute?._id === route._id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
                     >
-                      <p className="font-medium text-sm">{route.nombre}</p>
-                      <div className="mt-1 flex items-center gap-3 text-xs text-gray-600">
-                        <span>{route.distancia}</span>
-                        <span>•</span>
-                        <span>{route.tiempoEstimado}</span>
+                      <div className="flex items-start justify-between gap-2">
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => handleViewRoute(route)}
+                        >
+                          <p className="font-medium text-sm">{route.name}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                            <span>📏 {route.distance.toFixed(2)} km</span>
+                            <span>•</span>
+                            <span>⏱️ {Math.round(route.duration)} min</span>
+                            {route.fare && route.fare > 0 && (
+                              <>
+                                <span>•</span>
+                                <span>💵 Bs. {route.fare.toFixed(2)}</span>
+                              </>
+                            )}
+                            <span>•</span>
+                            <span className={route.isActive ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                              {route.isActive ? '✅ Activa' : '❌ Inactiva'}
+                            </span>
+                          </div>
+                          {route.schedules && route.schedules.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {route.schedules.slice(0, 3).map((schedule, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded"
+                                >
+                                  🕐 {schedule}
+                                </span>
+                              ))}
+                              {route.schedules.length > 3 && (
+                                <span className="text-xs text-gray-500">
+                                  +{route.schedules.length - 3} más
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleToggleActive(route)}
+                            className="h-8 w-8 p-0"
+                            title={route.isActive ? 'Desactivar' : 'Activar'}
+                          >
+                            <Power className={`h-4 w-4 ${route.isActive ? 'text-green-600' : 'text-gray-400'}`} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteRoute(route._id)}
+                            className="h-8 w-8 p-0 text-red-600"
+                            title="Desactivar ruta"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -298,13 +386,17 @@ export default function RutasManager() {
         </div>
 
         {/* Mapa */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 order-1 lg:order-2">
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Mapa Interactivo - Ciudad Guayana</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Mapa Interactivo - Ciudad Guayana</CardTitle>
             </CardHeader>
             <CardContent>
-              <MapComponent onMapClick={handleMapClick} routeData={routeData} />
+              <MapComponent 
+                onMapClick={handleMapClick} 
+                routeData={routeData}
+                selectedRoute={selectedRoute}
+              />
             </CardContent>
           </Card>
         </div>

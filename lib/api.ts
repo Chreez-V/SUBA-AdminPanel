@@ -1,5 +1,18 @@
-// API Base URL
-const API_BASE_URL = 'https://subapp-api.onrender.com';
+// Detect environment and set API Base URL
+const isDevelopment = process.env.NODE_ENV === 'development' || 
+                      typeof window !== 'undefined' && 
+                      (window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1');
+
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:3500'  // Local backend
+  : 'https://subapp-api.onrender.com';  // Production backend
+
+// Log para debugging
+if (typeof window !== 'undefined') {
+  console.log('🌐 API Environment:', isDevelopment ? 'Development (Local)' : 'Production');
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
 
 // Auth API
 export async function loginUser(email: string, password: string) {
@@ -42,41 +55,22 @@ export async function getDrivers() {
 
 export async function createDriver(driver: any) {
   // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(driver),
-  // });
-  // return response.json();
-  
   return { ...driver, id: Date.now().toString() };
 }
 
 export async function updateDriver(id: string, driver: any) {
   // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
-  //   method: 'PUT',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(driver),
-  // });
-  // return response.json();
-  
   return { ...driver, id };
 }
 
 export async function deleteDriver(id: string) {
   // TODO: Conectar con tu backend
-  // await fetch(`${API_BASE_URL}/api/drivers/${id}`, { method: 'DELETE' });
-  
   return { success: true };
 }
 
 // Passengers API (Mock endpoints)
 export async function getPassengers() {
   // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/passengers`);
-  // return response.json();
-  
   return [
     { id: '1', nombre: 'Ana Silva', email: 'ana@example.com', viajes: 45 },
     { id: '2', nombre: 'Pedro Martínez', email: 'pedro@example.com', viajes: 32 },
@@ -84,44 +78,92 @@ export async function getPassengers() {
   ];
 }
 
-// Routes API (Mock endpoints)
+// ✅ Routes API - Updated to English
 export async function getRoutes() {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/routes`);
-  // return response.json();
-  
-  return [
-    { 
-      id: '1', 
-      nombre: 'Ruta Centro - Unare', 
-      distancia: '12.5 km',
-      tiempoEstimado: '25 min',
-      estado: 'Activa'
+  const response = await fetch(`${API_BASE_URL}/api/routes`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  ];
-}
-
-export async function createRoute(route: any) {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/routes`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(route),
-  // });
-  // return response.json();
+  });
   
-  return { ...route, id: Date.now().toString() };
+  if (!response.ok) {
+    throw new Error('Error fetching routes');
+  }
+  
+  const result = await response.json();
+  return result.data;
 }
 
-// OSRM API para calcular rutas
+export async function createRoute(route: {
+  name: string;
+  startPoint: { lat: number; lng: number };
+  endPoint: { lat: number; lng: number };
+  fare?: number;
+  schedules?: string[];
+}) {
+  const response = await fetch(`${API_BASE_URL}/api/routes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(route),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error creating route');
+  }
+  
+  const result = await response.json();
+  return result.data;
+}
+
+export async function updateRoute(id: string, updates: {
+  name?: string;
+  fare?: number;
+  isActive?: boolean;
+  schedules?: string[];
+}) {
+  const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error updating route');
+  }
+  
+  const result = await response.json();
+  return result.data;
+}
+
+export async function deleteRoute(id: string) {
+  const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error deleting route');
+  }
+  
+  const result = await response.json();
+  return result.data;
+}
+
+// OSRM API para calcular rutas (no se usa más, el backend lo hace)
 export async function calculateRoute(start: [number, number], end: [number, number]) {
   const response = await fetch(
     `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
   );
   
   if (!response.ok) {
-    throw new Error('Error al calcular la ruta');
+    throw new Error('Error calculating route');
   }
   
   return response.json();
 }
+
+// Export API_BASE_URL for debugging purposes
+export { API_BASE_URL };
