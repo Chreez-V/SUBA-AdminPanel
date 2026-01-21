@@ -14,9 +14,9 @@ if (typeof window !== 'undefined') {
   console.log('🔗 API Base URL:', API_BASE_URL);
 }
 
-// Auth API
+// ✅ Auth API para ADMINISTRADORES (usa /api/admin/login)
 export async function loginUser(email: string, password: string) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,17 +26,56 @@ export async function loginUser(email: string, password: string) {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || 'Error en el inicio de sesión');
+    throw new Error(error.error || 'Error en el inicio de sesión');
   }
 
   const data = await response.json();
   
-  // Validar que el usuario sea admin
+  // ✅ El backend ya verifica que sea admin, pero doble validación
   if (data.user?.role !== 'admin') {
     throw new Error('Acceso denegado: Solo administradores pueden acceder');
   }
 
   return data;
+}
+
+// ✅ Logout de Administrador
+export async function logoutAdmin() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/admin/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error al cerrar sesión');
+    }
+
+    // ✅ Limpiar datos del localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+
+    return await response.json();
+  } catch (error) {
+    // Limpiar localStorage incluso si hay error
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    throw error;
+  }
 }
 
 // Drivers/Buses API (Mock endpoints - conectar con tu backend)

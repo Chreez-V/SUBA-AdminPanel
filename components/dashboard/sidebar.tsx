@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Bus, LayoutDashboard, Users, Map, LogOut } from "lucide-react";
+import { logoutAdmin } from "@/lib/api";
+import { useState } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -14,11 +16,33 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    setIsLoggingOut(true);
+    try {
+      // ✅ Llamar al backend para invalidar el token
+      await logoutAdmin();
+      
+      // ✅ Eliminar cookies
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+      
+      // ✅ Forzar recarga completa para limpiar caché y estado
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      
+      // ✅ Limpiar cookies incluso si hay error
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+      
+      // ✅ Redirigir al login de todos modos
+      window.location.href = "/login";
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -60,10 +84,11 @@ export function Sidebar() {
       <div className="border-t border-[#0066B3]/30 p-4 bg-[#003459]/50">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-blue-100 transition-all duration-200 hover:bg-[#E31E24] hover:text-white"
+          disabled={isLoggingOut}
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-blue-100 transition-all duration-200 hover:bg-[#E31E24] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <LogOut className="h-5 w-5" />
-          <span>Cerrar Sesión</span>
+          <span>{isLoggingOut ? "Cerrando..." : "Cerrar Sesión"}</span>
         </button>
       </div>
     </div>

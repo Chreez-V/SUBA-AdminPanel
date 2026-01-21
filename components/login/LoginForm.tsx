@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,14 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // ✅ Verificar si ya está autenticado
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -24,10 +32,15 @@ export default function LoginForm() {
     try {
       const data = await loginUser(email, password);
       
+      // ✅ Guardar en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       
-      router.push("/dashboard");
+      // ✅ Guardar en cookies para el middleware
+      document.cookie = `token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+      
+      // ✅ Forzar recarga de la página para limpiar caché
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Error al iniciar sesión");
     } finally {
