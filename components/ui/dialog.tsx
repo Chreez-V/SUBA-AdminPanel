@@ -25,9 +25,9 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in-0 duration-200">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
         onClick={() => onOpenChange?.(false)}
       />
       {children}
@@ -42,7 +42,7 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative z-50 w-full max-w-lg rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-950",
+      "relative z-50 w-full max-w-lg rounded-2xl border-2 bg-white p-6 shadow-2xl mx-4 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300",
       className
     )}
     {...props}
@@ -50,9 +50,9 @@ const DialogContent = React.forwardRef<
     {children}
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 disabled:pointer-events-none"
+      className="absolute right-4 top-4 rounded-lg p-1.5 transition-all hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent disabled:pointer-events-none cursor-pointer text-white hover:text-white/80"
     >
-      <X className="h-4 w-4" />
+      <X className="h-5 w-5" />
       <span className="sr-only">Close</span>
     </button>
   </div>
@@ -64,7 +64,7 @@ const DialogHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
+    className={cn("flex flex-col space-y-2 text-center sm:text-left", className)}
     {...props}
   />
 );
@@ -85,4 +85,16 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = "DialogTitle";
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle };
+const DialogDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = "DialogDescription";
+
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription };

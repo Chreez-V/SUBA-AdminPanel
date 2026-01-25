@@ -1,8 +1,8 @@
 "use client";
 
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { EnvironmentBadge } from "@/components/dashboard/environment-badge";
+import { Sidebar, MobileMenuButton } from "@/components/dashboard/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, isLoading } = useAuth(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Mostrar loading mientras verifica autenticación
   if (isLoading) {
@@ -30,12 +31,13 @@ export default function DashboardLayout({
 
   // Usuario autenticado, mostrar dashboard
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <MobileMenuButton onClick={() => setIsSidebarOpen(true)} />
+      <main className="flex-1 overflow-y-auto lg:ml-0">
+        <div className="lg:hidden h-16"></div> {/* Espaciado para botón móvil */}
         {children}
       </main>
-      <EnvironmentBadge />
     </div>
   );
 }

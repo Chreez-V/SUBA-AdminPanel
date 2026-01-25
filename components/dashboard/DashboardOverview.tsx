@@ -25,14 +25,14 @@ const rutasData = [
 
 export default function DashboardOverview() {
   return (
-    <div className="p-8 bg-gray-50">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-[#00457C]">Dashboard Overview</h1>
-        <p className="text-gray-700 font-medium mt-1">Panel de control - Ciudad Guayana, Venezuela</p>
+    <div className="p-4 md:p-6 lg:p-8 bg-gray-50">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#00457C]">Dashboard Overview</h1>
+        <p className="text-sm md:text-base text-gray-700 font-medium mt-1">Panel de control - Ciudad Guayana, Venezuela</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 md:mb-8 grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Buses Activos"
           value="24"
@@ -64,16 +64,16 @@ export default function DashboardOverview() {
       </div>
 
       {/* Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Viajes Realizados */}
         <Card className="border-gray-200 shadow-md bg-white">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#00457C]">
+            <CardTitle className="text-lg md:text-xl font-bold text-[#00457C]">
               Viajes Realizados (Últimos 6 meses)
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="px-2 md:px-6">
+            <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
               <AreaChart data={viajesData}>
                 <defs>
                   <linearGradient id="colorViajes" x1="0" y1="0" x2="0" y2="1">
@@ -82,14 +82,14 @@ export default function DashboardOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="mes" stroke="#4B5563" style={{ fontSize: '12px', fontWeight: 600 }} />
-                <YAxis stroke="#4B5563" style={{ fontSize: '12px', fontWeight: 600 }} />
+                <XAxis dataKey="mes" stroke="#4B5563" style={{ fontSize: '10px', fontWeight: 600 }} className="md:text-xs" />
+                <YAxis stroke="#4B5563" style={{ fontSize: '10px', fontWeight: 600 }} className="md:text-xs" />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#FFFFFF', 
                     border: '1px solid #E5E7EB',
                     borderRadius: '8px',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     fontWeight: 600
                   }}
                 />
@@ -109,28 +109,29 @@ export default function DashboardOverview() {
         {/* Rutas Más Transitadas */}
         <Card className="border-gray-200 shadow-md bg-white">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#00457C]">
+            <CardTitle className="text-lg md:text-xl font-bold text-[#00457C]">
               Rutas Más Transitadas
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="px-2 md:px-6">
+            <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
               <BarChart data={rutasData} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis type="number" stroke="#4B5563" style={{ fontSize: '12px', fontWeight: 600 }} />
+                <XAxis type="number" stroke="#4B5563" style={{ fontSize: '10px', fontWeight: 600 }} className="md:text-xs" />
                 <YAxis 
                   dataKey="ruta" 
                   type="category" 
-                  width={140} 
+                  width={100}
+                  className="md:w-[140px]"
                   stroke="#4B5563" 
-                  style={{ fontSize: '12px', fontWeight: 600 }} 
+                  style={{ fontSize: '9px', fontWeight: 600 }} 
                 />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#FFFFFF', 
                     border: '1px solid #E5E7EB',
                     borderRadius: '8px',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     fontWeight: 600
                   }}
                 />
