@@ -5,6 +5,27 @@
 
 import { API_BASE_URL } from './config';
 
+// Backend route interface (what the API returns)
+interface BackendRoute {
+  _id: string;
+  name: string;
+  startPoint: {
+    lat: number;
+    lng: number;
+  };
+  endPoint: {
+    lat: number;
+    lng: number;
+  };
+  distance: number;
+  estimatedTime: number;
+  geometry: any;
+  status: 'Active' | 'Inactive';
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Frontend route interface (what the components use)
 export interface Route {
   _id: string;
   name: string;
@@ -24,6 +45,22 @@ export interface Route {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// Helper function to map backend route to frontend route
+function mapBackendToFrontend(backendRoute: BackendRoute): Route {
+  return {
+    _id: backendRoute._id,
+    name: backendRoute.name,
+    startPoint: backendRoute.startPoint,
+    endPoint: backendRoute.endPoint,
+    distance: backendRoute.distance,
+    duration: backendRoute.estimatedTime,
+    geometry: backendRoute.geometry,
+    isActive: backendRoute.status === 'Active',
+    createdAt: backendRoute.createdAt,
+    updatedAt: backendRoute.updatedAt,
+  };
 }
 
 export interface CreateRoutePayload {
@@ -57,7 +94,8 @@ export async function getRoutes(): Promise<Route[]> {
   }
   
   const result = await response.json();
-  return result.data;
+  // Map backend routes to frontend format
+  return result.data.map(mapBackendToFrontend);
 }
 
 /**
@@ -76,7 +114,7 @@ export async function createRoute(route: CreateRoutePayload): Promise<Route> {
   }
   
   const result = await response.json();
-  return result.data;
+  return mapBackendToFrontend(result.data);
 }
 
 /**
@@ -95,7 +133,7 @@ export async function updateRoute(id: string, updates: UpdateRoutePayload): Prom
   }
   
   const result = await response.json();
-  return result.data;
+  return mapBackendToFrontend(result.data);
 }
 
 /**
@@ -112,7 +150,7 @@ export async function deactivateRoute(id: string): Promise<Route> {
   }
   
   const result = await response.json();
-  return result.data;
+  return mapBackendToFrontend(result.data);
 }
 
 /**
