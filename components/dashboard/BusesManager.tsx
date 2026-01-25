@@ -16,10 +16,12 @@ export default function BusesManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [formData, setFormData] = useState<CreateDriverPayload>({
-    nombre: "",
-    unidad: "",
-    placa: "",
-    estado: "Activo",
+    name: "",
+    email: "",
+    password: "",
+    licenseNumber: "",
+    phone: "",
+    status: "Active",
   });
 
   useEffect(() => {
@@ -42,14 +44,23 @@ export default function BusesManager() {
     if (driver) {
       setEditingDriver(driver);
       setFormData({
-        nombre: driver.nombre,
-        unidad: driver.unidad,
-        placa: driver.placa,
-        estado: driver.estado,
+        name: driver.name,
+        email: driver.email,
+        password: "", // Don't prefill password when editing
+        licenseNumber: driver.licenseNumber,
+        phone: driver.phone,
+        status: driver.status,
       });
     } else {
       setEditingDriver(null);
-      setFormData({ nombre: "", unidad: "", placa: "", estado: "Activo" });
+      setFormData({ 
+        name: "", 
+        email: "", 
+        password: "", 
+        licenseNumber: "", 
+        phone: "", 
+        status: "Active" 
+      });
     }
     setIsDialogOpen(true);
   };
@@ -58,7 +69,7 @@ export default function BusesManager() {
     e.preventDefault();
     try {
       if (editingDriver) {
-        await updateDriver(editingDriver.id, formData as UpdateDriverPayload);
+        await updateDriver(editingDriver._id, formData as UpdateDriverPayload);
       } else {
         await createDriver(formData);
       }
@@ -108,27 +119,29 @@ export default function BusesManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="font-bold text-gray-800 text-xs md:text-sm">Nombre</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-xs md:text-sm">Unidad</TableHead>
-                    <TableHead className="font-bold text-gray-800 text-xs md:text-sm hidden sm:table-cell">Placa</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-xs md:text-sm">Email</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-xs md:text-sm hidden sm:table-cell">Licencia</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-xs md:text-sm hidden md:table-cell">Teléfono</TableHead>
                     <TableHead className="font-bold text-gray-800 text-xs md:text-sm">Estado</TableHead>
                     <TableHead className="text-right font-bold text-gray-800 text-xs md:text-sm">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {drivers.map((driver) => (
-                    <TableRow key={driver.id}>
-                      <TableCell className="font-semibold text-gray-900 text-xs md:text-sm">{driver.nombre}</TableCell>
-                      <TableCell className="font-medium text-gray-700 text-xs md:text-sm">{driver.unidad}</TableCell>
-                      <TableCell className="font-medium text-gray-700 text-xs md:text-sm hidden sm:table-cell">{driver.placa}</TableCell>
+                    <TableRow key={driver._id}>
+                      <TableCell className="font-semibold text-gray-900 text-xs md:text-sm">{driver.name}</TableCell>
+                      <TableCell className="font-medium text-gray-700 text-xs md:text-sm">{driver.email}</TableCell>
+                      <TableCell className="font-medium text-gray-700 text-xs md:text-sm hidden sm:table-cell">{driver.licenseNumber}</TableCell>
+                      <TableCell className="font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">{driver.phone}</TableCell>
                       <TableCell>
                         <span
                           className={`inline-flex rounded-full px-2 md:px-3 py-1 text-xs font-bold ${
-                            driver.estado === "Activo"
+                            driver.status === "Active"
                               ? "bg-green-100 text-green-800 border border-green-300"
                               : "bg-red-100 text-red-800 border border-red-300"
                           }`}
                         >
-                          {driver.estado}
+                          {driver.status === "Active" ? "Activo" : "Inactivo"}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
@@ -144,7 +157,7 @@ export default function BusesManager() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDelete(driver.id)}
+                            onClick={() => handleDelete(driver._id)}
                             className="h-8 w-8 p-0 md:h-9 md:w-9"
                           >
                             <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
@@ -170,42 +183,65 @@ export default function BusesManager() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre Completo</Label>
+              <Label htmlFor="name">Nombre Completo</Label>
               <Input
-                id="nombre"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unidad">Unidad (Nro de Bus)</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="unidad"
-                value={formData.unidad}
-                onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+            {!editingDriver && (
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="licenseNumber">Número de Licencia</Label>
+              <Input
+                id="licenseNumber"
+                value={formData.licenseNumber}
+                onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="placa">Placa</Label>
+              <Label htmlFor="phone">Teléfono</Label>
               <Input
-                id="placa"
-                value={formData.placa}
-                onChange={(e) => setFormData({ ...formData, placa: e.target.value })}
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="estado">Estado</Label>
+              <Label htmlFor="status">Estado</Label>
               <select
-                id="estado"
-                value={formData.estado}
-                onChange={(e) => setFormData({ ...formData, estado: e.target.value as "Activo" | "Inactivo" })}
+                id="status"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as "Active" | "Inactive" })}
                 className="flex h-11 w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00457C] focus-visible:border-[#00457C]"
               >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
+                <option value="Active">Activo</option>
+                <option value="Inactive">Inactivo</option>
               </select>
             </div>
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
