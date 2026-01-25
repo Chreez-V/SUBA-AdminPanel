@@ -1,110 +1,145 @@
 /**
- * Drivers/Buses API
- * Handles CRUD operations for drivers and buses
+ * Drivers API
+ * Handles CRUD operations for drivers
  */
 
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, getAuthHeaders } from './config';
 
 export interface Driver {
-  id: string;
-  nombre: string;
-  unidad: string;
-  placa: string;
-  estado: 'Activo' | 'Inactivo';
-  email?: string;
-  telefono?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  _id: string;
+  name: string;
+  email: string;
+  licenseNumber: string;
+  phone: string;
+  status: 'Active' | 'Inactive';
+  role: 'driver';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateDriverPayload {
-  nombre: string;
-  unidad: string;
-  placa: string;
-  estado?: 'Activo' | 'Inactivo';
-  email?: string;
-  telefono?: string;
+  name: string;
+  email: string;
+  password: string;
+  licenseNumber: string;
+  phone: string;
+  status?: 'Active' | 'Inactive';
 }
 
 export interface UpdateDriverPayload {
-  nombre?: string;
-  unidad?: string;
-  placa?: string;
-  estado?: 'Activo' | 'Inactivo';
+  name?: string;
   email?: string;
-  telefono?: string;
+  licenseNumber?: string;
+  phone?: string;
+  status?: 'Active' | 'Inactive';
 }
 
 /**
  * Get all drivers
- * TODO: Connect with backend
  */
 export async function getDrivers(): Promise<Driver[]> {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers`, {
-  //   method: 'GET',
-  //   headers: { 'Content-Type': 'application/json' },
-  // });
-  // if (!response.ok) throw new Error('Error fetching drivers');
-  // const result = await response.json();
-  // return result.data;
+  const response = await fetch(`${API_BASE_URL}/api/drivers`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
   
-  // Mock data temporal
-  return [
-    { id: '1', nombre: 'Carlos Pérez', unidad: '101', placa: 'ABC-123', estado: 'Activo' },
-    { id: '2', nombre: 'María González', unidad: '102', placa: 'DEF-456', estado: 'Activo' },
-    { id: '3', nombre: 'Juan Rodríguez', unidad: '103', placa: 'GHI-789', estado: 'Inactivo' },
-  ];
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error fetching drivers' }));
+    throw new Error(error.message || 'Error al obtener conductores');
+  }
+  
+  const result = await response.json();
+  return result.data || result;
+}
+
+/**
+ * Get active drivers only
+ */
+export async function getActiveDrivers(): Promise<Driver[]> {
+  const response = await fetch(`${API_BASE_URL}/api/drivers/active`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error fetching active drivers' }));
+    throw new Error(error.message || 'Error al obtener conductores activos');
+  }
+  
+  const result = await response.json();
+  return result.data || result;
+}
+
+/**
+ * Get driver by ID
+ */
+export async function getDriverById(id: string): Promise<Driver> {
+  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error fetching driver' }));
+    throw new Error(error.message || 'Error al obtener conductor');
+  }
+  
+  const result = await response.json();
+  return result.data || result;
 }
 
 /**
  * Create a new driver
- * TODO: Connect with backend
  */
 export async function createDriver(driver: CreateDriverPayload): Promise<Driver> {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(driver),
-  // });
-  // if (!response.ok) throw new Error('Error creating driver');
-  // const result = await response.json();
-  // return result.data;
+  const response = await fetch(`${API_BASE_URL}/api/drivers`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(driver),
+  });
   
-  return { ...driver, id: Date.now().toString(), estado: driver.estado || 'Activo' };
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error creating driver' }));
+    throw new Error(error.message || 'Error al crear conductor');
+  }
+  
+  const result = await response.json();
+  return result.data || result;
 }
 
 /**
  * Update an existing driver
- * TODO: Connect with backend
  */
 export async function updateDriver(id: string, driver: UpdateDriverPayload): Promise<Driver> {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
-  //   method: 'PATCH',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(driver),
-  // });
-  // if (!response.ok) throw new Error('Error updating driver');
-  // const result = await response.json();
-  // return result.data;
+  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(driver),
+  });
   
-  return { ...driver, id } as Driver;
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error updating driver' }));
+    throw new Error(error.message || 'Error al actualizar conductor');
+  }
+  
+  const result = await response.json();
+  return result.data || result;
 }
 
 /**
  * Delete a driver
- * TODO: Connect with backend
  */
-export async function deleteDriver(id: string): Promise<{ success: boolean }> {
-  // TODO: Conectar con tu backend
-  // const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
-  //   method: 'DELETE',
-  // });
-  // if (!response.ok) throw new Error('Error deleting driver');
-  // const result = await response.json();
-  // return result;
+export async function deleteDriver(id: string): Promise<{ success: boolean; message?: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(false), // No Content-Type for DELETE without body
+  });
   
-  return { success: true };
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Error deleting driver' }));
+    throw new Error(error.message || 'Error al eliminar conductor');
+  }
+  
+  const result = await response.json();
+  return result;
 }
