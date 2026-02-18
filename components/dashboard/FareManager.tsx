@@ -36,7 +36,9 @@ export default function FareManager() {
       const fare = await getGeneralFare();
       setCurrentFare(fare);
       if (fare) {
-        setNewFareAmount(fare.fare.toString());
+        // Handle both 'fare' field and legacy 'farePrice' field
+        const amount = (fare as any).fare ?? (fare as any).farePrice ?? 0;
+        setNewFareAmount(amount.toString());
       }
     } catch (error: any) {
       console.error("Error loading fare:", error);
@@ -113,14 +115,16 @@ export default function FareManager() {
 
   const calculateChangePercentage = () => {
     if (!currentFare) return 0;
-    const oldAmount = currentFare.fare;
+    const oldAmount = (currentFare as any).fare ?? (currentFare as any).farePrice ?? 0;
     const newAmount = parseFloat(newFareAmount);
     if (isNaN(newAmount) || oldAmount === 0) return 0;
     return ((newAmount - oldAmount) / oldAmount) * 100;
   };
 
+  const getFareAmount = (f: BusFare): number => (f as any).fare ?? (f as any).farePrice ?? 0;
+
   const changePercentage = calculateChangePercentage();
-  const hasChanged = currentFare && parseFloat(newFareAmount) !== currentFare.fare;
+  const hasChanged = currentFare && parseFloat(newFareAmount) !== getFareAmount(currentFare);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6 lg:p-8">
@@ -166,7 +170,7 @@ export default function FareManager() {
                     <div className="text-center p-4 md:p-6 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
                       <p className="text-xs md:text-sm font-semibold text-green-700 mb-2">Monto Vigente</p>
                       <p className="text-3xl md:text-5xl lg:text-6xl font-bold text-green-800 break-all">
-                        {formatCurrency(currentFare.fare)}
+                        {formatCurrency(getFareAmount(currentFare))}
                       </p>
                     </div>
 
@@ -244,7 +248,7 @@ export default function FareManager() {
                         </div>
                       </div>
                       <p className="text-xs md:text-sm text-gray-600 mt-2 break-all">
-                        {formatCurrency(currentFare!.fare)} → {formatCurrency(parseFloat(newFareAmount))}
+                        {formatCurrency(getFareAmount(currentFare!))} → {formatCurrency(parseFloat(newFareAmount))}
                       </p>
                     </div>
                   )}

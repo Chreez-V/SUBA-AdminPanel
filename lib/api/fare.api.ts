@@ -8,7 +8,8 @@ import { API_BASE_URL } from './config';
 export interface BusFare {
   _id: string;
   routeId?: string;
-  fare: number;
+  fare?: number;
+  farePrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,7 +47,7 @@ export async function createGeneralFare(fare: number): Promise<BusFare> {
   const response = await fetch(`${API_BASE_URL}/api/pasajes/crear`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ routeId: 'general', fare }),
+    body: JSON.stringify({ fare }),
   });
   
   if (!response.ok) {
