@@ -7,20 +7,17 @@ import { API_BASE_URL } from './config';
 
 export interface BusFare {
   _id: string;
-  routeId?: string;
-  fare?: number;
-  farePrice?: number;
+  amount: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateFarePayload {
-  routeId?: string;
-  fare: number;
+  amount: number;
 }
 
 export interface UpdateFarePayload {
-  fare: number;
+  amount: number;
 }
 
 /**
@@ -43,11 +40,11 @@ export async function getGeneralFare(): Promise<BusFare | null> {
 /**
  * Create the initial general fare
  */
-export async function createGeneralFare(fare: number): Promise<BusFare> {
+export async function createGeneralFare(amount: number): Promise<BusFare> {
   const response = await fetch(`${API_BASE_URL}/api/pasajes/crear`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fare }),
+    body: JSON.stringify({ amount }),
   });
   
   if (!response.ok) {
@@ -61,11 +58,11 @@ export async function createGeneralFare(fare: number): Promise<BusFare> {
 /**
  * Update the general fare
  */
-export async function updateGeneralFare(id: string, fare: number): Promise<BusFare> {
+export async function updateGeneralFare(id: string, amount: number): Promise<BusFare> {
   const response = await fetch(`${API_BASE_URL}/api/pasajes/actualizar/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fare }),
+    body: JSON.stringify({ amount }),
   });
   
   if (!response.ok) {

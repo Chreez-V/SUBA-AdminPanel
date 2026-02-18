@@ -36,9 +36,7 @@ export default function FareManager() {
       const fare = await getGeneralFare();
       setCurrentFare(fare);
       if (fare) {
-        // Handle both 'fare' field and legacy 'farePrice' field
-        const amount = (fare as any).fare ?? (fare as any).farePrice ?? 0;
-        setNewFareAmount(amount.toString());
+        setNewFareAmount((fare.amount ?? 0).toString());
       }
     } catch (error: any) {
       console.error("Error loading fare:", error);
@@ -115,13 +113,13 @@ export default function FareManager() {
 
   const calculateChangePercentage = () => {
     if (!currentFare) return 0;
-    const oldAmount = (currentFare as any).fare ?? (currentFare as any).farePrice ?? 0;
+    const oldAmount = currentFare.amount ?? 0;
     const newAmount = parseFloat(newFareAmount);
     if (isNaN(newAmount) || oldAmount === 0) return 0;
     return ((newAmount - oldAmount) / oldAmount) * 100;
   };
 
-  const getFareAmount = (f: BusFare): number => (f as any).fare ?? (f as any).farePrice ?? 0;
+  const getFareAmount = (f: BusFare): number => f.amount ?? 0;
 
   const changePercentage = calculateChangePercentage();
   const hasChanged = currentFare && parseFloat(newFareAmount) !== getFareAmount(currentFare);
