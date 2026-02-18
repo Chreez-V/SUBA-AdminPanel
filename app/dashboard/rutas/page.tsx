@@ -3,18 +3,30 @@
 import React, { useState } from "react";
 import RutasManager from "@/components/dashboard/RutasManager";
 import ParadasManager from "@/components/dashboard/ParadasManager";
-import { Route, MapPin } from "lucide-react";
+import ConjuntosManager from "@/components/dashboard/ConjuntosManager";
+import ReportesManager from "@/components/dashboard/ReportesManager";
+import { Route, MapPin, FolderOpen, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { key: "rutas", label: "Rutas", icon: Route },
   { key: "paradas", label: "Paradas", icon: MapPin },
+  { key: "conjuntos", label: "Conjuntos", icon: FolderOpen },
+  { key: "reportes", label: "Reportes", icon: AlertTriangle },
 ] as const;
 
 type Tab = (typeof tabs)[number]["key"];
 
+const TAB_COMPONENTS: Record<Tab, React.ComponentType> = {
+  rutas: RutasManager,
+  paradas: ParadasManager,
+  conjuntos: ConjuntosManager,
+  reportes: ReportesManager,
+};
+
 const RutasPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("rutas");
+  const ActiveComponent = TAB_COMPONENTS[activeTab];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,16 +36,16 @@ const RutasPage: React.FC = () => {
           Gestión de Rutas
         </h1>
         <p className="text-sm md:text-base text-gray-700 font-medium mt-1">
-          Administrar rutas y paradas del sistema de transporte
+          Administrar rutas, paradas, conjuntos y reportes del sistema de transporte
         </p>
 
-        <div className="flex gap-1 mt-4">
+        <div className="flex gap-1 mt-4 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border-b-2 -mb-[1px]",
+                "flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border-b-2 -mb-[1px] whitespace-nowrap",
                 activeTab === tab.key
                   ? "border-[#00457C] text-[#00457C] bg-gray-50"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -47,7 +59,7 @@ const RutasPage: React.FC = () => {
       </div>
 
       {/* Tab content */}
-      {activeTab === "rutas" ? <RutasManager /> : <ParadasManager />}
+      <ActiveComponent />
     </div>
   );
 };

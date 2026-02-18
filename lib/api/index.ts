@@ -20,3 +20,9 @@ export * from './drivers.api';
 
 // Export Passengers API
 export * from './passengers.api';
+
+// Export Route Sets (Conjuntos) API
+export * from './routeSets.api';
+
+// Export Reports API
+export * from './reports.api';
