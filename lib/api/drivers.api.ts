@@ -38,7 +38,7 @@ export interface UpdateDriverPayload {
  * Get all drivers
  */
 export async function getDrivers(): Promise<Driver[]> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/listar`, {
     method: 'GET',
     headers: getAuthHeaders(),
   });
@@ -56,7 +56,7 @@ export async function getDrivers(): Promise<Driver[]> {
  * Get active drivers only
  */
 export async function getActiveDrivers(): Promise<Driver[]> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers/active`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/activos`, {
     method: 'GET',
     headers: getAuthHeaders(),
   });
@@ -74,7 +74,7 @@ export async function getActiveDrivers(): Promise<Driver[]> {
  * Get driver by ID
  */
 export async function getDriverById(id: string): Promise<Driver> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/buscar/${id}`, {
     method: 'GET',
     headers: getAuthHeaders(),
   });
@@ -92,7 +92,7 @@ export async function getDriverById(id: string): Promise<Driver> {
  * Create a new driver
  */
 export async function createDriver(driver: CreateDriverPayload): Promise<Driver> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/crear`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(driver),
@@ -111,7 +111,7 @@ export async function createDriver(driver: CreateDriverPayload): Promise<Driver>
  * Update an existing driver
  */
 export async function updateDriver(id: string, driver: UpdateDriverPayload): Promise<Driver> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/actualizar/${id}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify(driver),
@@ -130,7 +130,7 @@ export async function updateDriver(id: string, driver: UpdateDriverPayload): Pro
  * Delete a driver
  */
 export async function deleteDriver(id: string): Promise<{ success: boolean; message?: string }> {
-  const response = await fetch(`${API_BASE_URL}/api/drivers/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/conductores/eliminar/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(false), // No Content-Type for DELETE without body
   });

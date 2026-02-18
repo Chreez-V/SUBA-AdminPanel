@@ -23,7 +23,7 @@ export interface PassengersResponse {
  * Get all passengers from backend
  */
 export async function getPassengers(): Promise<Passenger[]> {
-  const response = await fetch(`${API_BASE_URL}/api/passengers`, {
+  const response = await fetch(`${API_BASE_URL}/api/pasajeros`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });

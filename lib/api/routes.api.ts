@@ -82,7 +82,7 @@ export interface UpdateRoutePayload {
  * Get all routes
  */
 export async function getRoutes(): Promise<Route[]> {
-  const response = await fetch(`${API_BASE_URL}/api/routes`, {
+  const response = await fetch(`${API_BASE_URL}/api/rutas`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export async function getRoutes(): Promise<Route[]> {
  * Create a new route
  */
 export async function createRoute(route: CreateRoutePayload): Promise<Route> {
-  const response = await fetch(`${API_BASE_URL}/api/routes`, {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/crear`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(route),
@@ -121,7 +121,7 @@ export async function createRoute(route: CreateRoutePayload): Promise<Route> {
  * Update an existing route
  */
 export async function updateRoute(id: string, updates: UpdateRoutePayload): Promise<Route> {
-  const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/actualizar/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
@@ -140,7 +140,7 @@ export async function updateRoute(id: string, updates: UpdateRoutePayload): Prom
  * Soft delete (deactivate) a route
  */
 export async function deactivateRoute(id: string): Promise<Route> {
-  const response = await fetch(`${API_BASE_URL}/api/routes/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/desactivar/${id}`, {
     method: 'DELETE',
   });
   
@@ -157,7 +157,7 @@ export async function deactivateRoute(id: string): Promise<Route> {
  * Hard delete (permanently delete) a route
  */
 export async function deleteRoute(id: string): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE_URL}/api/routes/${id}/permanent`, {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/eliminar/${id}`, {
     method: 'DELETE',
   });
   

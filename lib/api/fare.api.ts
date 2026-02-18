@@ -26,7 +26,7 @@ export interface UpdateFarePayload {
  * Get the general bus fare (first one in the system)
  */
 export async function getGeneralFare(): Promise<BusFare | null> {
-  const response = await fetch(`${API_BASE_URL}/api/busfares`, {
+  const response = await fetch(`${API_BASE_URL}/api/pasajes/listar`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
@@ -43,7 +43,7 @@ export async function getGeneralFare(): Promise<BusFare | null> {
  * Create the initial general fare
  */
 export async function createGeneralFare(fare: number): Promise<BusFare> {
-  const response = await fetch(`${API_BASE_URL}/api/busfares`, {
+  const response = await fetch(`${API_BASE_URL}/api/pasajes/crear`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ routeId: 'general', fare }),
@@ -61,7 +61,7 @@ export async function createGeneralFare(fare: number): Promise<BusFare> {
  * Update the general fare
  */
 export async function updateGeneralFare(id: string, fare: number): Promise<BusFare> {
-  const response = await fetch(`${API_BASE_URL}/api/busfares/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/pasajes/actualizar/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fare }),

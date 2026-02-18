@@ -23,7 +23,7 @@ export interface LoginResponse {
  * @returns Login response with token and user data
  */
 export async function loginUser(email: string, password: string): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/iniciar-sesion`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export async function logoutAdmin(): Promise<{ success: boolean; message: string
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/logout`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/cerrar-sesion`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
