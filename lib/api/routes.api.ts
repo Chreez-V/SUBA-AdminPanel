@@ -9,17 +9,20 @@ import { API_BASE_URL } from './config';
 interface BackendRoute {
   _id: string;
   name: string;
-  startPoint: {
+  startPoint?: {
     lat: number;
     lng: number;
   };
-  endPoint: {
+  endPoint?: {
     lat: number;
     lng: number;
   };
+  stops?: any[];
+  edges?: any[];
   distance: number;
   estimatedTime: number;
   geometry: any;
+  routeType?: 'circular' | 'bidirectional';
   status: 'Active' | 'Inactive';
   createdAt: string;
   updatedAt: string;
@@ -29,17 +32,20 @@ interface BackendRoute {
 export interface Route {
   _id: string;
   name: string;
-  startPoint: {
+  startPoint?: {
     lat: number;
     lng: number;
   };
-  endPoint: {
+  endPoint?: {
     lat: number;
     lng: number;
   };
+  stops?: any[];
+  edges?: any[];
   distance: number;
   duration: number;
   geometry: any;
+  routeType: 'circular' | 'bidirectional';
   fare?: number;
   schedules?: string[];
   isActive: boolean;
@@ -54,9 +60,12 @@ function mapBackendToFrontend(backendRoute: BackendRoute): Route {
     name: backendRoute.name,
     startPoint: backendRoute.startPoint,
     endPoint: backendRoute.endPoint,
+    stops: backendRoute.stops,
+    edges: backendRoute.edges,
     distance: backendRoute.distance,
     duration: backendRoute.estimatedTime,
     geometry: backendRoute.geometry,
+    routeType: backendRoute.routeType || 'bidirectional',
     isActive: backendRoute.status === 'Active',
     createdAt: backendRoute.createdAt,
     updatedAt: backendRoute.updatedAt,
@@ -69,6 +78,21 @@ export interface CreateRoutePayload {
   endPoint: { lat: number; lng: number };
   fare?: number;
   schedules?: string[];
+}
+
+export interface CreateRouteFromStopsPayload {
+  name: string;
+  stopIds: string[];
+  edges: EdgePayload[];
+  routeType: 'circular' | 'bidirectional';
+}
+
+export interface EdgePayload {
+  fromStop: string;
+  toStop: string;
+  geometry: { type: string; coordinates: number[][] };
+  distance: number;
+  duration: number;
 }
 
 export interface UpdateRoutePayload {
@@ -99,7 +123,7 @@ export async function getRoutes(): Promise<Route[]> {
 }
 
 /**
- * Create a new route
+ * Create a new route (legacy: start/end)
  */
 export async function createRoute(route: CreateRoutePayload): Promise<Route> {
   const response = await fetch(`${API_BASE_URL}/api/rutas/crear`, {
@@ -115,6 +139,47 @@ export async function createRoute(route: CreateRoutePayload): Promise<Route> {
   
   const result = await response.json();
   return mapBackendToFrontend(result.data);
+}
+
+/**
+ * Create a route from ordered stops (new flow)
+ */
+export async function createRouteFromStops(payload: CreateRouteFromStopsPayload): Promise<Route> {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/crear-desde-paradas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error creating route from stops');
+  }
+
+  const result = await response.json();
+  return mapBackendToFrontend(result.data);
+}
+
+/**
+ * Calculate a single OSRM edge between two stops
+ */
+export async function calculateEdge(
+  fromStopId: string,
+  toStopId: string
+): Promise<EdgePayload> {
+  const response = await fetch(`${API_BASE_URL}/api/rutas/calcular-arista`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fromStopId, toStopId }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error calculating edge');
+  }
+
+  const result = await response.json();
+  return result.data;
 }
 
 /**

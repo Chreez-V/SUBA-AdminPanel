@@ -12,6 +12,9 @@ export * from './auth.api';
 // Export Routes API
 export * from './routes.api';
 
+// Export Stops API
+export * from './stops.api';
+
 // Export Drivers API
 export * from './drivers.api';
 
