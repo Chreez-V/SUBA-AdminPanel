@@ -646,7 +646,7 @@ export default function TransfersManager() {
         onConfirm={handleApprove}
         title="Aprobar Recarga"
         description={`¿Confirmas aprobar la recarga de ${formatCurrency(approveDialog.amount)} para ${approveDialog.userName}? El saldo se acreditará inmediatamente.`}
-        type="warning"
+        type="approve"
         isLoading={isProcessing}
       />
 

@@ -97,7 +97,7 @@ export async function getPaymentValidationById(id: string): Promise<PaymentValid
 export async function approveRecharge(id: string): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}/api/billetera/validaciones/${id}/aprobar`, {
     method: 'PUT',
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders(false),
   });
 
   if (!response.ok) {

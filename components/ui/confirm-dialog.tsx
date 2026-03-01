@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Trash2, Power } from "lucide-react";
+import { AlertTriangle, Trash2, Power, CheckCircle } from "lucide-react";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   title: string;
   description: string;
-  type?: "delete" | "deactivate" | "warning";
+  type?: "delete" | "deactivate" | "warning" | "approve";
   isLoading?: boolean;
 }
 
@@ -50,6 +50,15 @@ export function ConfirmDialog({
       borderColor: "border-yellow-400/30",
       buttonColor: "bg-white text-orange-700 hover:bg-yellow-50 focus:ring-white",
       confirmText: "Confirmar",
+    },
+    approve: {
+      icon: CheckCircle,
+      color: "text-white",
+      bgColor: "bg-gradient-to-br from-[#00457C] to-[#003459]",
+      iconBgColor: "bg-[#FDB714]",
+      borderColor: "border-[#0066B3]/30",
+      buttonColor: "bg-[#FDB714] text-[#00457C] hover:bg-yellow-400 focus:ring-[#FDB714] font-bold",
+      confirmText: "Aprobar",
     },
   };
 
