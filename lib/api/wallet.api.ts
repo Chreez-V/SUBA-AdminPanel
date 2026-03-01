@@ -70,7 +70,7 @@ export async function getPaymentValidations(): Promise<PaymentValidation[]> {
   }
 
   const data = await response.json();
-  return data.validations || data;
+  return Array.isArray(data) ? data : (data.data || data.validations || []);
 }
 
 /**
