@@ -26,3 +26,6 @@ export * from './routeSets.api';
 
 // Export Reports API
 export * from './reports.api';
+
+// Export Wallet API
+export * from './wallet.api';
