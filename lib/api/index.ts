@@ -29,3 +29,6 @@ export * from './reports.api';
 
 // Export Wallet API
 export * from './wallet.api';
+
+// Export NFC API
+export * from './nfc.api';

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Home, Bus, Users, Route, LogOut, Menu, X, Coins, ArrowLeftRight } from "lucide-react";
+import { Home, Bus, Users, Route, LogOut, Menu, X, Coins, ArrowLeftRight, CreditCard } from "lucide-react";
 import { logoutAdmin } from "@/lib/api/auth.api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,7 @@ const navigation = [
   { name: "Pasajeros", href: "/dashboard/pasajeros", icon: Users },
   { name: "Pasaje", href: "/dashboard/pasaje", icon: Coins },
   { name: "Rutas", href: "/dashboard/rutas", icon: Route },
+  { name: "Tarjetas NFC", href: "/dashboard/nfc", icon: CreditCard },
   { name: "Transferencias", href: "/dashboard/transferencias", icon: ArrowLeftRight },
 ];
 
